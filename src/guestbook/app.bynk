@@ -1,0 +1,51 @@
+---
+The guestbook app: an agent that keeps the entries, and an HTTP service in
+front of it.
+---
+context guestbook.app
+
+uses guestbook.entries
+consumes bynk { Clock }
+
+--- Which guestbook: any non-empty name. Each one is a separate agent.
+type BookName = String where NonEmpty
+
+---
+One guestbook. On Cloudflare, each `Guestbook(name)` is its own Durable Object,
+with its own storage, so two books never share entries.
+
+`entries` is a `Log`: an append-only list where each entry is stamped with the
+time it was added.
+---
+agent Guestbook {
+	key book: BookName
+
+	store entries: Log[Entry]
+
+	--- Add an entry. Appending stamps the time, so this handler needs the clock.
+	on call sign(entry: Entry) -> Effect[()] given Clock {
+		do entries.append(entry)
+	}
+
+	--- The most recent entries, newest first.
+	on call latest(count: Int) -> Effect[List[Entry]] {
+		entries.recent(count).collect()
+	}
+}
+
+service api from http {
+	--- Sign a guestbook. The body is checked against `Entry` before this runs.
+	on POST("/books/:book/entries") (
+		book: BookName,
+		body: Entry
+	) -> Effect[HttpResult[Entry]] by Visitor {
+		do Guestbook(book).sign(body)
+		Created(body)
+	}
+
+	--- Read a guestbook's latest entries.
+	on GET("/books/:book/entries") (book: BookName) -> Effect[HttpResult[List[Entry]]] by Visitor {
+		let entries <- Guestbook(book).latest(20)
+		Ok(entries)
+	}
+}

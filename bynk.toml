@@ -1,0 +1,4 @@
+# Bynk project manifest. Rename the project when you make it your own.
+[project]
+name = "guestbook"
+version = "0.1.0"

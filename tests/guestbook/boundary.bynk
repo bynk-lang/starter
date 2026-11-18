@@ -1,0 +1,32 @@
+// A `system` suite sends raw JSON through the HTTP service, so it reaches the
+// checks at the boundary that a typed value in a unit test would skip.
+suite guestbook.app as system {
+	case "a good entry is signed and read back" {
+		let signed <- api.POST(
+			"/books/:book/entries",
+			"cafe",
+			Wire("{\"name\": \"Ada\", \"message\": \"Lovely tea.\"}")
+		) by Visitor
+		expect signed is Handled(Created(_))
+		let read <- api.GET("/books/:book/entries", "cafe") by Visitor
+		expect read is Ok([_])
+	}
+
+	case "an empty message is refused before it reaches the guestbook" {
+		let refused <- api.POST(
+			"/books/:book/entries",
+			"cafe",
+			Wire("{\"name\": \"Ada\", \"message\": \"\"}")
+		) by Visitor
+		expect refused is Rejected(RefinementViolation(_))
+	}
+
+	case "a missing field is refused too" {
+		let refused <- api.POST(
+			"/books/:book/entries",
+			"cafe",
+			Wire("{\"name\": \"Ada\"}")
+		) by Visitor
+		expect refused is Rejected(_)
+	}
+}
