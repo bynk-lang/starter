@@ -1,0 +1,29 @@
+// A ready-to-use Bynk environment: open this repository in GitHub Codespaces
+// (Code → Codespaces → Create codespace), or in VS Code with the Dev Containers
+// extension, and `bynk test .` works straight away.
+{
+  "name": "Bynk starter",
+  "image": "mcr.microsoft.com/devcontainers/base:ubuntu-24.04",
+  "features": {
+    "ghcr.io/devcontainers/features/node:1": { "version": "22" }
+  },
+  // Installs the Bynk release named in BYNK_VERSION, so the editor, your
+  // terminal and CI all use the same compiler.
+  "postCreateCommand": "bash .devcontainer/install-bynk.sh",
+  "forwardPorts": [8787],
+  "portsAttributes": {
+    "8787": { "label": "bynk dev", "onAutoForward": "notify" }
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": ["bynk-lang.bynk-vscode"],
+      "settings": {
+        // The container already has the toolchain on PATH.
+        "bynk.toolchain.autoInstall": false
+      }
+    },
+    "codespaces": {
+      "openFiles": ["README.md", "src/guestbook/entries.bynk", "src/guestbook/app.bynk"]
+    }
+  }
+}

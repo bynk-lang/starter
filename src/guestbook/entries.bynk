@@ -1,0 +1,24 @@
+---
+What a guestbook entry is, and the rules it has to follow.
+
+This is a `commons`: plain types and pure functions, with no state and no access
+to the outside world. That makes it the easiest part of the app to test.
+---
+commons guestbook.entries
+
+--- Who signed: between 1 and 40 characters.
+type Name = String where NonEmpty && MaxLength(40)
+
+--- What they wrote: between 1 and 280 characters.
+type Message = String where NonEmpty && MaxLength(280)
+
+--- One signature in the guestbook.
+type Entry = {
+	name: Name,
+	message: Message,
+}
+
+--- An entry as a single line of text, for a page or a log.
+fn signed(entry: Entry) -> String {
+	"\"\(entry.message)\" — \(entry.name)"
+}

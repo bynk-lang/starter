@@ -1,0 +1,20 @@
+suite guestbook.entries
+
+case "an entry signs as one line" {
+	let entry = Entry {
+		name: "Ada",
+		message: "Lovely tea.",
+	}
+	expect signed(entry) == "\"Lovely tea.\" — Ada"
+}
+
+case "a name must not be empty or too long" {
+	expect Name.of("Ada") is Ok(_)
+	expect Name.of("") is Err(_)
+	expect Name.of("A very long name that goes on and on and on") is Err(_)
+}
+
+case "a message must not be empty" {
+	expect Message.of("Hello!") is Ok(_)
+	expect Message.of("") is Err(_)
+}

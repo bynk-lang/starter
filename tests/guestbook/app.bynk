@@ -1,0 +1,42 @@
+suite guestbook.app
+
+consumes bynk { Clock }
+
+fn ada() -> Entry {
+	Entry {
+		name: "Ada",
+		message: "Lovely tea.",
+	}
+}
+
+fn grace() -> Entry {
+	Entry {
+		name: "Grace",
+		message: "Great scones.",
+	}
+}
+
+case "a new guestbook is empty" {
+	let entries <- Guestbook("new").latest(20)
+	expect entries == []
+}
+
+case "the latest entries come back newest first" {
+	do Guestbook("cafe").sign(ada())
+	do Guestbook("cafe").sign(grace())
+	let entries <- Guestbook("cafe").latest(20)
+	expect entries == [grace(), ada()]
+}
+
+case "each guestbook keeps its own entries" {
+	do Guestbook("cafe").sign(ada())
+	let other <- Guestbook("library").latest(20)
+	expect other == []
+}
+
+case "latest returns at most the number asked for" {
+	do Guestbook("busy").sign(ada())
+	do Guestbook("busy").sign(grace())
+	let one <- Guestbook("busy").latest(1)
+	expect one == [grace()]
+}
