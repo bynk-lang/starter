@@ -36,7 +36,7 @@ extension gives you the same set-up as Codespaces.
 bynk test .
 ```
 
-You should see ten passing tests, in three groups:
+You should see the tests pass, in three groups:
 
 - `guestbook.entries`: the pure rules, such as "a name can't be empty".
 - `guestbook.app`: the guestbook agent, signed and read directly.
@@ -95,6 +95,14 @@ A good first change: let people rate their visit from 1 to 5.
 2. Run `bynk check .`. The compiler now points at every place that builds an
    `Entry` without a rating, in the tests. Add `rating: 5` (or any number from
    1 to 5) to each.
+
+   If you ran `bynk dev` in step 3, it also reports
+   `bynk.agent.non_additive_state_change`. `bynk dev` recorded the shape of the
+   guestbook's stored entries in `bynk.schema.lock`, and a deployed guestbook
+   would hold entries with no rating. Nothing is deployed yet, so delete
+   `bynk.schema.lock` and the next build records the new shape. (After a real
+   deploy, follow the error's note instead: give the field a default, or
+   migrate the old entries.)
 3. The compiler can't see inside the raw JSON in
    `tests/guestbook/boundary.bynk`, so add `"rating": 5` to the JSON there
    yourself. Then add a test that a rating of `6` is refused: copy the "an
@@ -123,10 +131,11 @@ The first deploy writes `bynk.deploy.lock`, which records what was deployed.
 Commit it: the workflow uploads it as an artifact named `bynk.deploy.lock` when
 it changes.
 
-A build also writes `bynk.schema.lock`, which records the shape of the data
-your agents store. Commit that too. From then on, the compiler refuses a change
-that stored entries couldn't be read through, such as removing a field from
-`Entry`, and explains how to make the change safely.
+`bynk dev` and the deploy also write `bynk.schema.lock`, which records the shape
+of the data your agents store. Commit it after your first deploy. From then on,
+the compiler refuses a change that deployed entries couldn't be read through,
+like the required field in step 5, and its note explains the safe ways to make
+it.
 
 ## Keeping Bynk up to date
 
